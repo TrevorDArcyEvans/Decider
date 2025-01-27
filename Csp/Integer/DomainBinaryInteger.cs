@@ -87,6 +87,11 @@ namespace Decider.Csp.Integer
 				RemoveFromDomain(count++);
 		}
 
+		internal uint[] Domain()
+		{
+			return this.domain;
+		}
+
 		public static IDomain<int> CreateDomain(int lowerBound, int upperBound)
 		{
 			if (lowerBound > upperBound)
