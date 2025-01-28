@@ -18,8 +18,8 @@ namespace Decider.Tests.Csp
         [Fact]
         public void TestAddBoundsCorrect()
         {
-            var variable1 = new VariableInteger("var1", 0, 5);
-            var variable2 = new VariableInteger("var2", 0, 5);
+            var variable1 = new VariableInteger<int>("var1", 0, 5);
+            var variable2 = new VariableInteger<int>("var2", 0, 5);
 
             var expression = variable1 + variable2;
             var updatedBounds = expression.GetUpdatedBounds();
@@ -31,8 +31,8 @@ namespace Decider.Tests.Csp
         [Fact]
         public void TestSubtractBoundsCorrect()
         {
-            var variable1 = new VariableInteger("var1", 0, 5);
-            var variable2 = new VariableInteger("var2", 0, 5);
+            var variable1 = new VariableInteger<int>("var1", 0, 5);
+            var variable2 = new VariableInteger<int>("var2", 0, 5);
 
             var expression = variable1 - variable2;
             var updatedBounds = expression.GetUpdatedBounds();
@@ -44,8 +44,8 @@ namespace Decider.Tests.Csp
         [Fact]
         public void TestMultiplyBoundsCorrect()
         {
-            var variable1 = new VariableInteger("var1", 0, 5);
-            var variable2 = new VariableInteger("var2", 0, 5);
+            var variable1 = new VariableInteger<int>("var1", 0, 5);
+            var variable2 = new VariableInteger<int>("var2", 0, 5);
 
             var expression = variable1 * variable2;
             var updatedBounds = expression.GetUpdatedBounds();
@@ -57,7 +57,7 @@ namespace Decider.Tests.Csp
         [Fact]
         public void TestDivideBoundsCorrect()
         {
-            var divisor = new VariableInteger("divisor", 1, 5);
+            var divisor = new VariableInteger<int>("divisor", 1, 5);
 
             var expression = 10 / divisor;
             var updatedBounds = expression.GetUpdatedBounds();
@@ -69,8 +69,8 @@ namespace Decider.Tests.Csp
         [Fact]
         public void TestXorBoundsCorrect()
         {
-            var variable1 = new VariableInteger("var1", 0, 0);
-            var variable2 = new VariableInteger("var2", 1, 1);
+            var variable1 = new VariableInteger<int>("var1", 0, 0);
+            var variable2 = new VariableInteger<int>("var2", 1, 1);
 
             var expression = variable1 ^ variable2;
             var updatedBounds = expression.GetUpdatedBounds();

@@ -6,37 +6,37 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Numerics;
 using Decider.Csp.BaseTypes;
 
 namespace Decider.Csp.Integer
 {
-	public class MetaExpressionInteger : ExpressionInteger, IMetaExpression<int>
+	public class MetaExpressionInteger<T> : ExpressionInteger<T>, IMetaExpression<T>  where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
-		private readonly IList<IVariable<int>> support;
+		private readonly IList<IVariable<T>> support;
 
-		public IList<IVariable<int>> Support
+		public IList<IVariable<T>> Support
 		{
 			get { return this.support; }
 		}
 
-		public MetaExpressionInteger(Expression<int> left, Expression<int> right, IEnumerable<IVariable<int>> support)
+		public MetaExpressionInteger(Expression<T> left, Expression<T> right, IEnumerable<IVariable<T>> support)
 			: base(left, right)
 		{
 			this.support = support.ToList();
 		}
 
-		public MetaExpressionInteger(int integer, IEnumerable<IVariable<int>> support)
+		public MetaExpressionInteger(T integer, IEnumerable<IVariable<T>> support)
 			: base(integer)
 		{
 			this.support = support.ToList();
 		}
 
-		internal MetaExpressionInteger(VariableInteger variable,
-			Func<ExpressionInteger, ExpressionInteger, int> evaluate,
-			Func<ExpressionInteger, ExpressionInteger, Bounds<int>> evaluateBounds,
-			Func<ExpressionInteger, ExpressionInteger, Bounds<int>, ConstraintOperationResult> propagator,
-			IEnumerable<IVariable<int>> support)
+		internal MetaExpressionInteger(VariableInteger<T> variable,
+			Func<ExpressionInteger<T>, ExpressionInteger<T>, T> evaluate,
+			Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>> evaluateBounds,
+			Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>, ConstraintOperationResult> propagator,
+			IEnumerable<IVariable<T>> support)
 			: base(variable, evaluate, evaluateBounds, propagator)
 		{
 			this.support = support.ToList();

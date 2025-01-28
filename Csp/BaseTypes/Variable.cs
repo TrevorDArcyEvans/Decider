@@ -23,7 +23,7 @@ namespace Decider.Csp.BaseTypes
 		string Name { get; }
 		T InstantiatedValue { get; }
 		bool Instantiated();
-		int Size();
+		T Size();
         IVariable<T> Clone();
 	}
 }

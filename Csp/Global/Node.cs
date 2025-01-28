@@ -4,7 +4,7 @@
   This file is part of Decider.
 */
 using System.Collections.Generic;
-
+using System.Numerics;
 using Decider.Csp.Integer;
 
 namespace Decider.Csp.Global
@@ -37,34 +37,34 @@ namespace Decider.Csp.Global
 		}
 	}
 
-	internal class NodeVariable : Node
+	internal class NodeVariable<T> : Node where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
-		internal VariableInteger Variable { get; set; }
+		internal VariableInteger<T> Variable { get; set; }
 
-		internal NodeVariable(VariableInteger variable, string label)
+		internal NodeVariable(VariableInteger<T> variable, string label)
 			: base(label)
 		{
 			this.Variable = variable;
 		}
 
-		internal NodeVariable(VariableInteger variable)
+		internal NodeVariable(VariableInteger<T> variable)
 		{
 			this.Variable = variable;
 		}
 
 	}
 
-	internal class NodeValue : Node
+	internal class NodeValue<T> : Node where T : INumber<T>, IMinMaxValue<T>
 	{
-		internal int Value { get; set; }
+		internal T Value { get; set; }
 
-		internal NodeValue(int value, string label)
+		internal NodeValue(T value, string label)
 			: base(label)
 		{
 			this.Value = value;
 		}
 
-		internal NodeValue(int value)
+		internal NodeValue(T value)
 		{
 			this.Value = value;
 		}

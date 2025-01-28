@@ -15,7 +15,7 @@ namespace Decider.Example.LeagueGeneration
 {
 	public class LeagueGeneration
 	{
-		private VariableInteger[][] Variables { get; set; }
+		private VariableInteger<int>[][] Variables { get; set; }
 		private IList<IConstraint> Constraints { get; set; }
 		private int LeagueSize { get; set; }
 		
@@ -25,14 +25,14 @@ namespace Decider.Example.LeagueGeneration
 		public LeagueGeneration(int leagueSize)
 		{
 			LeagueSize = leagueSize;
-			Variables = new VariableInteger[LeagueSize - 1][];
+			Variables = new VariableInteger<int>[LeagueSize - 1][];
 
 			for (var i = 0; i < Variables.Length; ++i)
-				Variables[i] = new VariableInteger[i + 1];
+				Variables[i] = new VariableInteger<int>[i + 1];
 
 			for (var i = 0; i < Variables.Length; ++i)
 				for (var j = 0; j < Variables[i].Length; ++j)
-					Variables[i][j] = new VariableInteger(string.Format("{0} v {1}", i, j), 1, LeagueSize - 1);
+					Variables[i][j] = new VariableInteger<int>(string.Format("{0} v {1}", i, j), 1, LeagueSize - 1);
 
 			for (var week = 1; week < LeagueSize; ++week)
 			{
@@ -41,7 +41,7 @@ namespace Decider.Example.LeagueGeneration
 
 				do
 				{
-					Variables[i][j] = new VariableInteger(string.Format("{0} v {1}", i, j), week, week);
+					Variables[i][j] = new VariableInteger<int>(string.Format("{0} v {1}", i, j), week, week);
 					--i;
 					++j;
 				} while (i >= j);
@@ -54,7 +54,7 @@ namespace Decider.Example.LeagueGeneration
 				var j = 0;
 				var i = row;
 
-				var allDifferentRow = new List<VariableInteger>();
+				var allDifferentRow = new List<VariableInteger<int>>();
 
 				while (i >= j)
 					allDifferentRow.Add(Variables[i][j++]);
@@ -64,13 +64,13 @@ namespace Decider.Example.LeagueGeneration
 				while (i < LeagueSize - 1)
 					allDifferentRow.Add(Variables[i++][j]);
 
-				Constraints.Add(new AllDifferentInteger(allDifferentRow));
+				Constraints.Add(new AllDifferentInteger<int>(allDifferentRow));
 			}
 		}
 
 		public void Search()
 		{
-			State = new StateInteger(Variables.SelectMany(s => s.Select(a => a)), Constraints);
+			State = new StateInteger<int>(Variables.SelectMany(s => s.Select(a => a)), Constraints);
 			State.Search();
 		}
 

@@ -16,7 +16,7 @@ namespace Decider.Csp.BaseTypes
 		InstantiateSuccessful
 	}
 
-	public interface IDomain<T> : IEnumerable where T : INumber<T>, IMinMaxValue<T>
+	public interface IDomain<T> : IEnumerable where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
 		T InstantiatedValue { get; }
 
@@ -29,7 +29,7 @@ namespace Decider.Csp.BaseTypes
 
 		string ToString();
 		bool Instantiated();
-		int Size();
+		T Size();
 		T LowerBound { get; }
 		T UpperBound { get; }
         IDomain<T> Clone();

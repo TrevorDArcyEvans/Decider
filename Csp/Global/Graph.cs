@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Numerics;
 using Decider.Csp.Integer;
 
 namespace Decider.Csp.Global
@@ -16,32 +16,32 @@ namespace Decider.Csp.Global
 		public List<Node> Nodes { get; set; }
 	}
 
-	internal class BipartiteGraph : Graph
+	internal class BipartiteGraph<T> : Graph  where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
-		internal Dictionary<int, NodeVariable> Variables { get; set; }
-		internal Dictionary<int, NodeValue> Values { get; set; }
+		internal Dictionary<int, NodeVariable<T>> Variables { get; set; }
+		internal Dictionary<T, NodeValue<T>> Values { get; set; }
 		internal Dictionary<Node, int> Distance { get; set; }
 		internal Dictionary<Node, Node> Pair { get; set; }
 
 		public Node NullNode { get; private set; }
 		private Queue<Node> queue;
 
-		internal BipartiteGraph(IEnumerable<VariableInteger> variables)
+		internal BipartiteGraph(IEnumerable<VariableInteger<T>> variables)
 		{
-			this.Variables = new Dictionary<int, NodeVariable>();
-			this.Values = new Dictionary<int, NodeValue>();
+			this.Variables = new Dictionary<int, NodeVariable<T>>();
+			this.Values = new Dictionary<T, NodeValue<T>>();
 			var linkedList = new LinkedList<Node>();
 
 			int index = 0;
 			foreach (var variable in variables)
 			{
-				this.Variables[index] = new NodeVariable(variable);
+				this.Variables[index] = new NodeVariable<T>(variable);
 				linkedList.AddLast(this.Variables[index]);
-				foreach (int value in variable.Domain)
+				foreach (T value in variable.Domain)
 				{
 					if (!this.Values.ContainsKey(value))
 					{
-						this.Values[value] = new NodeValue(value);
+						this.Values[value] = new NodeValue<T>(value);
 						linkedList.AddLast(this.Values[value]);
 					}
 

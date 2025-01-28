@@ -5,20 +5,20 @@
 */
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Numerics;
 using Decider.Csp.BaseTypes;
 using Decider.Csp.Integer;
 
 namespace Decider.Csp.Global
 {
-	public class AllDifferentInteger : IConstraint
+	public class AllDifferentInteger<T> : IConstraint  where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
-		private readonly VariableInteger[] variableArray;
-		private readonly IDomain<int>[] domainArray;
-		private BipartiteGraph Graph { get; set; }
+		private readonly VariableInteger<T>[] variableArray;
+		private readonly IDomain<T>[] domainArray;
+		private BipartiteGraph<T> Graph { get; set; }
 		private readonly CycleDetection cycleDetection;
 
-		private IState<int> State { get; set; }
+		private IState<T> State { get; set; }
 		private int Depth
 		{
 			get
@@ -30,10 +30,10 @@ namespace Decider.Csp.Global
 			}
 		}
 
-		public AllDifferentInteger(IEnumerable<VariableInteger> variables)
+		public AllDifferentInteger(IEnumerable<VariableInteger<T>> variables)
 		{
 			this.variableArray = variables.ToArray();
-			this.domainArray = new IDomain<int>[this.variableArray.Length];
+			this.domainArray = new IDomain<T>[this.variableArray.Length];
 			this.cycleDetection = new CycleDetection();
 		}
 
@@ -48,7 +48,7 @@ namespace Decider.Csp.Global
 				return;
 			}
 
-			if (this.variableArray.Cast<IVariable<int>>().Any(variable => !variable.Instantiated()))
+			if (this.variableArray.Cast<IVariable<T>>().Any(variable => !variable.Instantiated()))
 			{
 				result = ConstraintOperationResult.Undecided;
 				return;
@@ -64,7 +64,7 @@ namespace Decider.Csp.Global
 
 		public void Propagate(out ConstraintOperationResult result)
 		{
-			this.Graph = new BipartiteGraph(this.variableArray);
+			this.Graph = new BipartiteGraph<T>(this.variableArray);
 
 			if (!FindMatching())
 			{
@@ -80,13 +80,13 @@ namespace Decider.Csp.Global
 			{
 				foreach (var node in cycle)
 				{
-					if (!(node is NodeVariable) || node == this.Graph.NullNode)
+					if (!(node is NodeVariable<T>) || node == this.Graph.NullNode)
 						continue;
 
-					var variable = ((NodeVariable) node).Variable;
-					foreach (var value in variable.Domain.Cast<int>().Where(value =>
+					var variable = ((NodeVariable<T>) node).Variable;
+					foreach (var value in variable.Domain.Cast<T>().Where(value =>
 						this.Graph.Values[value].CycleIndex != node.CycleIndex &&
-						((NodeValue) this.Graph.Pair[node]).Value != value))
+						((NodeValue<T>) this.Graph.Pair[node]).Value != value))
 					{
 						result = ConstraintOperationResult.Propagated;
 

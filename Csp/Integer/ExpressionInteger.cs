@@ -4,16 +4,16 @@
   This file is part of Decider.
 */
 using System;
-
+using System.Numerics;
 using Decider.Csp.BaseTypes;
 
 namespace Decider.Csp.Integer
 {
-	public class ExpressionInteger : Expression<int>
+	public class ExpressionInteger<T> : Expression<T>  where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
-		public static ExpressionInteger operator +(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator +(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
 				evaluate = (l, r) => l.Value + r.Value,
 				evaluateBounds = (l, r) =>
@@ -21,7 +21,7 @@ namespace Decider.Csp.Integer
 						var leftBounds = l.GetUpdatedBounds();
 						var rightBounds = r.GetUpdatedBounds();
 
-						return new Bounds<int>
+						return new Bounds<T>
 						(
 							leftBounds.LowerBound + rightBounds.LowerBound,
 							leftBounds.UpperBound + rightBounds.UpperBound
@@ -62,9 +62,9 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator -(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator -(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			var expression = new ExpressionInteger(left, right)
+			var expression = new ExpressionInteger<T>(left, right)
 			{
 				evaluate = (l, r) => l.Value - r.Value,
 				evaluateBounds = (l, r) =>
@@ -72,7 +72,7 @@ namespace Decider.Csp.Integer
 						var leftBounds = l.GetUpdatedBounds();
 						var rightBounds = r.GetUpdatedBounds();
 
-						return new Bounds<int>
+						return new Bounds<T>
 						(
 							leftBounds.LowerBound - rightBounds.UpperBound,
 							leftBounds.UpperBound - rightBounds.LowerBound
@@ -115,14 +115,14 @@ namespace Decider.Csp.Integer
 			expression.remove = prune =>
 			{
 				var result = DomainOperationResult.ElementNotInDomain;
-				if (expression.left.Bounds.UpperBound - expression.left.Bounds.LowerBound == 0)
-					result = ((ExpressionInteger) expression.right).remove(expression.left.Bounds.LowerBound - prune);
+				if (expression.left.Bounds.UpperBound - expression.left.Bounds.LowerBound == T.Zero)
+					result = ((ExpressionInteger<T>) expression.right).remove(expression.left.Bounds.LowerBound - prune);
 
 				if (result == DomainOperationResult.EmptyDomain)
 					return result;
 
-				if (expression.right.Bounds.UpperBound - expression.right.Bounds.LowerBound == 0)
-					result = ((ExpressionInteger) expression.left).remove(expression.right.Bounds.LowerBound + prune);
+				if (expression.right.Bounds.UpperBound - expression.right.Bounds.LowerBound == T.Zero)
+					result = ((ExpressionInteger<T>) expression.left).remove(expression.right.Bounds.LowerBound + prune);
 
 				return result;
 			};
@@ -130,9 +130,9 @@ namespace Decider.Csp.Integer
 			return expression;
 		}
 
-		public static ExpressionInteger operator /(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator /(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
 				evaluate = (l, r) => l.Value / r.Value,
 				evaluateBounds = (l, r) =>
@@ -140,7 +140,7 @@ namespace Decider.Csp.Integer
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
 						leftBounds.LowerBound / rightBounds.UpperBound,
 						leftBounds.UpperBound / rightBounds.LowerBound
@@ -161,7 +161,7 @@ namespace Decider.Csp.Integer
 						result = ConstraintOperationResult.Propagated;
 					}
 
-					if (enforce.UpperBound == 0)
+					if (enforce.UpperBound == T.Zero)
 						return result;
 
 					if (second.Bounds.LowerBound < first.Bounds.LowerBound / enforce.UpperBound)
@@ -170,7 +170,7 @@ namespace Decider.Csp.Integer
 						result = ConstraintOperationResult.Propagated;
 					}
 
-					if (enforce.LowerBound == 0)
+					if (enforce.LowerBound == T.Zero)
 						return result;
 
 					if (second.Bounds.UpperBound > first.Bounds.UpperBound / enforce.LowerBound)
@@ -187,9 +187,9 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator *(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator *(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
 				evaluate = (l, r) => l.Value * r.Value,
 				evaluateBounds = (l, r) =>
@@ -197,7 +197,7 @@ namespace Decider.Csp.Integer
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
 						leftBounds.LowerBound * rightBounds.LowerBound,
 						leftBounds.UpperBound * rightBounds.UpperBound
@@ -207,7 +207,7 @@ namespace Decider.Csp.Integer
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (second.Bounds.UpperBound == 0 || second.Bounds.LowerBound == 0)
+					if (second.Bounds.UpperBound == T.Zero || second.Bounds.LowerBound == T.Zero)
 						return result;
 
 					if (first.Bounds.LowerBound < enforce.LowerBound / second.Bounds.UpperBound)
@@ -222,7 +222,7 @@ namespace Decider.Csp.Integer
 						result = ConstraintOperationResult.Propagated;
 					}
 
-					if (first.Bounds.UpperBound == 0 || first.Bounds.LowerBound == 0)
+					if (first.Bounds.UpperBound == T.Zero || first.Bounds.LowerBound == T.Zero)
 						return result;
 
 					if (second.Bounds.LowerBound < enforce.LowerBound / first.Bounds.UpperBound)
@@ -245,60 +245,60 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator &(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator &(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => (l.Value != 0) && (r.Value != 0) ? 1 : 0,
+				evaluate = (l, r) => (l.Value != T.Zero) && (r.Value != T.Zero) ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						(leftBounds.LowerBound != 0) && (rightBounds.LowerBound != 0) ? 1 : 0,
-						(leftBounds.UpperBound != 0) && (rightBounds.UpperBound != 0) ? 1 : 0
+						(leftBounds.LowerBound != T.Zero) && (rightBounds.LowerBound != T.Zero) ? T.One : T.Zero,
+						(leftBounds.UpperBound != T.Zero) && (rightBounds.UpperBound != T.Zero) ? T.One : T.Zero
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.LowerBound > 0)
+					if (enforce.LowerBound > T.Zero)
 					{
-						if (first.Bounds.UpperBound == 0 || second.Bounds.UpperBound == 0)
+						if (first.Bounds.UpperBound == T.Zero || second.Bounds.UpperBound == T.Zero)
 							result = ConstraintOperationResult.Violated;
 						else
 						{
-							first.Bounds.LowerBound = 1;
-							second.Bounds.LowerBound = 1;
+							first.Bounds.LowerBound = T.One;
+							second.Bounds.LowerBound = T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 					}
-					else if (enforce.UpperBound == 0)
+					else if (enforce.UpperBound == T.Zero && enforce.UpperBound < enforce.LowerBound)
 					{
-						if (first.Bounds.LowerBound == 1)
+						if (first.Bounds.LowerBound == T.One)
 						{
-							if (second.Bounds.LowerBound > 0)
+							if (second.Bounds.LowerBound > T.Zero)
 								result = ConstraintOperationResult.Violated;
-							else if (second.Bounds.UpperBound == 1)
+							else if (second.Bounds.UpperBound == T.One)
 							{
-								second.Bounds.UpperBound = 0;
+								second.Bounds.UpperBound = T.Zero;
 								result = ConstraintOperationResult.Propagated;
 							}
 						}
 
-						if (second.Bounds.LowerBound == 1)
+						if (second.Bounds.LowerBound == T.One)
 						{
-							if (second.Bounds.LowerBound > 0)
+							if (second.Bounds.LowerBound > T.Zero)
 								result = ConstraintOperationResult.Violated;
-							else if (first.Bounds.UpperBound == 1)
+							else if (first.Bounds.UpperBound == T.One)
 							{
-								first.Bounds.UpperBound = 0;
+								first.Bounds.UpperBound = T.Zero;
 								result = ConstraintOperationResult.Propagated;
 							}
 						}
@@ -312,47 +312,47 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator |(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator |(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => (l.Value != 0) || (r.Value != 0) ? 1 : 0,
+				evaluate = (l, r) => (l.Value != T.Zero) || (r.Value != T.Zero) ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						(leftBounds.LowerBound != 0) || (rightBounds.LowerBound != 0) ? 1 : 0,
-						(leftBounds.UpperBound != 0) || (rightBounds.UpperBound != 0) ? 1 : 0
+						(leftBounds.LowerBound != T.Zero) || (rightBounds.LowerBound != T.Zero) ? T.One : T.Zero,
+						(leftBounds.UpperBound != T.Zero) || (rightBounds.UpperBound != T.Zero) ? T.One : T.Zero
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.LowerBound > 0)
+					if (enforce.LowerBound > T.Zero)
 					{
-						if (first.Bounds.UpperBound == 0)
+						if (first.Bounds.UpperBound == T.Zero || second.Bounds.UpperBound == T.Zero)
 						{
-							second.Bounds.LowerBound = 1;
+							second.Bounds.LowerBound = T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
-						if (second.Bounds.UpperBound == 0)
+						if (second.Bounds.UpperBound == T.Zero)
 						{
-							first.Bounds.LowerBound = 1;
+							first.Bounds.LowerBound = T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 					}
-					else if (enforce.UpperBound == 0)
+					else if (enforce.UpperBound == T.Zero)
 					{
-						first.Bounds.UpperBound = 0;
-						second.Bounds.UpperBound = 0;
+						first.Bounds.UpperBound = T.Zero;
+						second.Bounds.UpperBound = T.Zero;
 						result = ConstraintOperationResult.Propagated;
 					}
 
@@ -364,80 +364,80 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator ^(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator ^(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => ((l.Value != 0) || (r.Value != 0)) && ((l.Value == 0) || (r.Value == 0)) ? 1 : 0,
+				evaluate = (l, r) => ((l.Value != T.Zero) || (r.Value != T.Zero)) && ((l.Value == T.Zero) || (r.Value == T.Zero)) ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						(leftBounds.LowerBound == leftBounds.UpperBound) && (rightBounds.LowerBound > 0) &&
-							(leftBounds.LowerBound != rightBounds.LowerBound) ? 1 : 0,
+						(leftBounds.LowerBound == leftBounds.UpperBound) && (rightBounds.LowerBound > T.Zero) &&
+							(leftBounds.LowerBound != rightBounds.LowerBound) ? T.One : T.Zero,
 						(leftBounds.LowerBound == leftBounds.UpperBound) && (rightBounds.LowerBound == rightBounds.UpperBound) &&
-							(leftBounds.LowerBound == rightBounds.LowerBound) ? 0 : 1
+							(leftBounds.LowerBound == rightBounds.LowerBound) ? T.Zero : T.One
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 					
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 					
-					if (enforce.LowerBound > 0)
+					if (enforce.LowerBound > T.Zero)
 					{
-						if (first.Bounds.UpperBound == 0)
+						if (first.Bounds.UpperBound == T.Zero)
 						{
-							second.Bounds.LowerBound = 1;
+							second.Bounds.LowerBound = T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
-						if (first.Bounds.LowerBound == 1)
+						if (first.Bounds.LowerBound == T.One)
 						{
-							second.Bounds.UpperBound = 0;
+							second.Bounds.UpperBound = T.Zero;
 							result = ConstraintOperationResult.Propagated;
 						}
 
-						if (second.Bounds.UpperBound == 0)
+						if (second.Bounds.UpperBound == T.Zero)
 						{
-							first.Bounds.LowerBound = 1;
+							first.Bounds.LowerBound = T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 						
-						if (second.Bounds.LowerBound == 1)
+						if (second.Bounds.LowerBound == T.One)
 						{
-							first.Bounds.UpperBound = 0;
+							first.Bounds.UpperBound = T.Zero;
 							result = ConstraintOperationResult.Propagated;
 						}
 					}
-					else if (enforce.UpperBound == 0)
+					else if (enforce.UpperBound == T.Zero)
 					{
-						if (first.Bounds.UpperBound == 0)
+						if (first.Bounds.UpperBound == T.Zero)
 						{
-							second.Bounds.UpperBound = 0;
+							second.Bounds.UpperBound = T.Zero;
 							result = ConstraintOperationResult.Propagated;
 						}
 						
-						if (first.Bounds.LowerBound == 1)
+						if (first.Bounds.LowerBound == T.One)
 						{
-							second.Bounds.LowerBound = 1;
+							second.Bounds.LowerBound = T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
-						if (second.Bounds.UpperBound == 0)
+						if (second.Bounds.UpperBound == T.Zero)
 						{
-							first.Bounds.UpperBound = 0;
+							first.Bounds.UpperBound = T.Zero;
 							result = ConstraintOperationResult.Propagated;
 						}
 						
-						if (second.Bounds.LowerBound == 1)
+						if (second.Bounds.LowerBound == T.One)
 						{
-							first.Bounds.LowerBound = 1;
+							first.Bounds.LowerBound = T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 					}
@@ -450,33 +450,33 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator !(ExpressionInteger operand)
+		public static ExpressionInteger<T> operator !(ExpressionInteger<T> operand)
 		{
-			return new ExpressionInteger(operand, null)
+			return new ExpressionInteger<T>(operand, null)
 			{
-				evaluate = (l, r) => l.Value == 0 ? 1 : 0,
+				evaluate = (l, r) => l.Value == T.Zero ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var bounds = l.GetUpdatedBounds();
 
-					return new Bounds<int>(bounds.UpperBound == 0 ? 1 : 0, bounds.LowerBound == 0 ? 1 : 0);
+					return new Bounds<T>(bounds.UpperBound == T.Zero ? T.One : T.Zero, bounds.LowerBound == T.Zero ? T.One : T.Zero);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.UpperBound == 0)
+					if (enforce.UpperBound == T.Zero)
 					{
-						first.Bounds.LowerBound = 1;
+						first.Bounds.LowerBound = T.One;
 						result = ConstraintOperationResult.Propagated;
 					}
 
-					if (enforce.LowerBound > 0)
+					if (enforce.LowerBound > T.Zero)
 					{
-						first.Bounds.UpperBound = 0;
+						first.Bounds.UpperBound = T.Zero;
 						result = ConstraintOperationResult.Propagated;
 					}
 
@@ -488,40 +488,40 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator <(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator <(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => l.Value < r.Value ? 1 : 0,
+				evaluate = (l, r) => l.Value < r.Value ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						leftBounds.UpperBound < rightBounds.LowerBound ? 1 : 0,
-						leftBounds.LowerBound <= leftBounds.UpperBound ? 1 : 0
+						leftBounds.UpperBound < rightBounds.LowerBound ? T.One : T.Zero,
+						leftBounds.LowerBound <= leftBounds.UpperBound ? T.One : T.Zero
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.LowerBound > 0) // enforce a < b
+					if (enforce.LowerBound > T.Zero) // enforce a < b
 					{
 						if (second.Bounds.LowerBound <= first.Bounds.LowerBound)
 						{
-							second.Bounds.LowerBound = first.Bounds.LowerBound + 1;
+							second.Bounds.LowerBound = first.Bounds.LowerBound + T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
 						if (first.Bounds.UpperBound >= second.Bounds.UpperBound)
 						{
-							first.Bounds.UpperBound = second.Bounds.UpperBound - 1;
+							first.Bounds.UpperBound = second.Bounds.UpperBound - T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
@@ -530,7 +530,7 @@ namespace Decider.Csp.Integer
 							result = ConstraintOperationResult.Violated;
 						}
 					}
-					else if (enforce.UpperBound == 0) // enforce a >= b
+					else if (enforce.UpperBound == T.Zero) // enforce a >= b
 					{
 						if (first.Bounds.LowerBound < second.Bounds.LowerBound)
 						{
@@ -558,40 +558,40 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator >(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator >(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => l.Value > r.Value ? 1 : 0,
+				evaluate = (l, r) => l.Value > r.Value ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						leftBounds.LowerBound > rightBounds.UpperBound ? 1 : 0,
-						leftBounds.UpperBound >= leftBounds.LowerBound ? 1 : 0
+						leftBounds.LowerBound > rightBounds.UpperBound ? T.One : T.Zero,
+						leftBounds.UpperBound >= leftBounds.LowerBound ? T.One : T.Zero
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.LowerBound > 0) // enforce a > b
+					if (enforce.LowerBound > T.Zero) // enforce a > b
 					{
 						if (first.Bounds.LowerBound <= second.Bounds.LowerBound)
 						{
-							first.Bounds.LowerBound = second.Bounds.LowerBound + 1;
+							first.Bounds.LowerBound = second.Bounds.LowerBound + T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
 						if (second.Bounds.UpperBound >= first.Bounds.UpperBound)
 						{
-							second.Bounds.UpperBound = first.Bounds.UpperBound - 1;
+							second.Bounds.UpperBound = first.Bounds.UpperBound - T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
@@ -600,7 +600,7 @@ namespace Decider.Csp.Integer
 							result = ConstraintOperationResult.Violated;
 						}
 					}
-					else if (enforce.UpperBound == 0) // enforce a <= b
+					else if (enforce.UpperBound == T.Zero) // enforce a <= b
 					{
 						if (second.Bounds.LowerBound < first.Bounds.LowerBound)
 						{
@@ -628,30 +628,30 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator <=(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator <=(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => l.Value <= r.Value ? 1 : 0,
+				evaluate = (l, r) => l.Value <= r.Value ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						leftBounds.UpperBound <= rightBounds.LowerBound ? 1 : 0,
-						leftBounds.LowerBound <= leftBounds.UpperBound ? 1 : 0
+						leftBounds.UpperBound <= rightBounds.LowerBound ? T.One : T.Zero,
+						leftBounds.LowerBound <= leftBounds.UpperBound ? T.One : T.Zero
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.LowerBound > 0) // enforce a <= b
+					if (enforce.LowerBound > T.Zero) // enforce a <= b
 					{
 						if (second.Bounds.LowerBound < first.Bounds.LowerBound)
 						{
@@ -670,17 +670,17 @@ namespace Decider.Csp.Integer
 							result = ConstraintOperationResult.Violated;
 						}
 					}
-					else if (enforce.UpperBound == 0) // enforce a > b
+					else if (enforce.UpperBound == T.Zero) // enforce a > b
 					{
 						if (first.Bounds.LowerBound <= second.Bounds.LowerBound)
 						{
-							first.Bounds.LowerBound = second.Bounds.LowerBound + 1;
+							first.Bounds.LowerBound = second.Bounds.LowerBound + T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
 						if (second.Bounds.UpperBound >= first.Bounds.UpperBound)
 						{
-							second.Bounds.UpperBound = first.Bounds.UpperBound - 1;
+							second.Bounds.UpperBound = first.Bounds.UpperBound - T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
@@ -698,30 +698,30 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator >=(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator >=(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => l.Value >= r.Value ? 1 : 0,
+				evaluate = (l, r) => l.Value >= r.Value ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						leftBounds.LowerBound >= rightBounds.UpperBound ? 1 : 0,
-						leftBounds.UpperBound >= leftBounds.LowerBound ? 1 : 0
+						leftBounds.LowerBound >= rightBounds.UpperBound ? T.One : T.Zero,
+						leftBounds.UpperBound >= leftBounds.LowerBound ? T.One : T.Zero
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.LowerBound > 0) // enforce a >= b
+					if (enforce.LowerBound > T.Zero) // enforce a >= b
 					{
 						if (first.Bounds.LowerBound < second.Bounds.LowerBound)
 						{
@@ -740,17 +740,17 @@ namespace Decider.Csp.Integer
 							result = ConstraintOperationResult.Violated;
 						}
 					}
-					else if (enforce.UpperBound == 0) // enforce a < b
+					else if (enforce.UpperBound == T.Zero) // enforce a < b
 					{
 						if (second.Bounds.LowerBound <= first.Bounds.LowerBound)
 						{
-							second.Bounds.LowerBound = first.Bounds.LowerBound + 1;
+							second.Bounds.LowerBound = first.Bounds.LowerBound + T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
 						if (first.Bounds.UpperBound >= second.Bounds.UpperBound)
 						{
-							first.Bounds.UpperBound = second.Bounds.UpperBound - 1;
+							first.Bounds.UpperBound = second.Bounds.UpperBound - T.One;
 							result = ConstraintOperationResult.Propagated;
 						}
 
@@ -768,31 +768,31 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator ==(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator ==(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => l.Value == r.Value ? 1 : 0,
+				evaluate = (l, r) => l.Value == r.Value ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
 						leftBounds.LowerBound == leftBounds.UpperBound && rightBounds.LowerBound == rightBounds.UpperBound &&
-						leftBounds.LowerBound == rightBounds.LowerBound ? 1 : 0,
-						leftBounds.UpperBound < rightBounds.LowerBound || leftBounds.LowerBound > rightBounds.UpperBound ? 0 : 1
+						leftBounds.LowerBound == rightBounds.LowerBound ? T.One : T.Zero,
+						leftBounds.UpperBound < rightBounds.LowerBound || leftBounds.LowerBound > rightBounds.UpperBound ? T.Zero : T.One
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.LowerBound > 0)
+					if (enforce.LowerBound > T.Zero)
 					{
 						if (first.Bounds.LowerBound < second.Bounds.LowerBound)
 						{
@@ -825,31 +825,31 @@ namespace Decider.Csp.Integer
 			};
 		}
 
-		public static ExpressionInteger operator !=(ExpressionInteger left, ExpressionInteger right)
+		public static ExpressionInteger<T> operator !=(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return new ExpressionInteger(left, right)
+			return new ExpressionInteger<T>(left, right)
 			{
-				evaluate = (l, r) => l.Value != r.Value ? 1 : 0,
+				evaluate = (l, r) => l.Value != r.Value ? T.One : T.Zero,
 				evaluateBounds = (l, r) =>
 				{
 					var leftBounds = l.GetUpdatedBounds();
 					var rightBounds = r.GetUpdatedBounds();
 
-					return new Bounds<int>
+					return new Bounds<T>
 					(
-						leftBounds.UpperBound < rightBounds.LowerBound || leftBounds.LowerBound > rightBounds.UpperBound ? 1 : 0,
+						leftBounds.UpperBound < rightBounds.LowerBound || leftBounds.LowerBound > rightBounds.UpperBound ? T.One : T.Zero,
 						leftBounds.LowerBound == leftBounds.UpperBound && rightBounds.LowerBound == rightBounds.UpperBound &&
-						leftBounds.LowerBound == rightBounds.LowerBound ? 0 : 1
+						leftBounds.LowerBound == rightBounds.LowerBound ? T.Zero : T.One
 					);
 				},
 				propagator = (first, second, enforce) =>
 				{
 					var result = ConstraintOperationResult.Undecided;
 
-					if (enforce.LowerBound == 0 && enforce.LowerBound < enforce.UpperBound)
+					if (enforce.LowerBound == T.Zero && enforce.LowerBound < enforce.UpperBound)
 						return result;
 
-					if (enforce.UpperBound == 0)
+					if (enforce.UpperBound == T.Zero)
 					{
 						if (first.Bounds.LowerBound < second.Bounds.LowerBound)
 						{
@@ -902,20 +902,20 @@ namespace Decider.Csp.Integer
 			return base.GetHashCode();
 		}
 
-		protected Expression<int> left;
-		protected Expression<int> right;
-		protected int integer;
-		protected Func<ExpressionInteger, ExpressionInteger, int> evaluate;
-		protected Func<ExpressionInteger, ExpressionInteger, Bounds<int>> evaluateBounds;
-		protected Func<ExpressionInteger, ExpressionInteger, Bounds<int>, ConstraintOperationResult> propagator;
-		protected Func<int, DomainOperationResult> remove;
+		protected Expression<T> left;
+		protected Expression<T> right;
+		protected T integer;
+		protected Func<ExpressionInteger<T>, ExpressionInteger<T>, T> evaluate;
+		protected Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>> evaluateBounds;
+		protected Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>, ConstraintOperationResult> propagator;
+		protected Func<T, DomainOperationResult> remove;
 
-		public Expression<int> Left { get { return this.left; } }
-		public Expression<int> Right { get { return this.right; } }
-		public int Integer { get { return this.integer; } }
-		public Func<ExpressionInteger, ExpressionInteger, int> Evaluate { get { return this.evaluate; } }
-		public Func<ExpressionInteger, ExpressionInteger, Bounds<int>> EvaluateBounds { get { return this.evaluateBounds; } }
-		public Func<ExpressionInteger, ExpressionInteger, Bounds<int>, ConstraintOperationResult> Propagator { get { return this.propagator; } }
+		public Expression<T> Left { get { return this.left; } }
+		public Expression<T> Right { get { return this.right; } }
+		public T Integer { get { return this.integer; } }
+		public Func<ExpressionInteger<T>, ExpressionInteger<T>, T> Evaluate { get { return this.evaluate; } }
+		public Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>> EvaluateBounds { get { return this.evaluateBounds; } }
+		public Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>, ConstraintOperationResult> Propagator { get { return this.propagator; } }
 
 		public override bool IsBound
 		{
@@ -928,32 +928,32 @@ namespace Decider.Csp.Integer
 			}
 		}
 
-		public override Bounds<int> GetUpdatedBounds()
+		public override Bounds<T> GetUpdatedBounds()
 		{
 			if (this.Evaluate == null)
 			{
-				if (this.left is VariableInteger)
+				if (this.left is VariableInteger<T>)
 					this.Bounds = this.left.GetUpdatedBounds();
 
 				return this.Bounds;
 			}
 
-			this.Bounds = this.EvaluateBounds((ExpressionInteger) this.left, (ExpressionInteger) this.right);
+			this.Bounds = this.EvaluateBounds((ExpressionInteger<T>) this.left, (ExpressionInteger<T>) this.right);
 			return this.Bounds;
 		}
 
-		public override int Value
+		public override T Value
 		{
 			get
 			{
 				if (this.Evaluate == null)
-					return this.left is VariableInteger ? this.left.Value : this.integer;
+					return this.left is VariableInteger<T> ? this.left.Value : this.integer;
 
-				return this.Evaluate((ExpressionInteger) this.left, (ExpressionInteger) this.right);
+				return this.Evaluate((ExpressionInteger<T>) this.left, (ExpressionInteger<T>) this.right);
 			}
 		}
 
-		public override void Propagate(Bounds<int> enforceBounds, out ConstraintOperationResult result)
+		public override void Propagate(Bounds<T> enforceBounds, out ConstraintOperationResult result)
 		{
 			left.GetUpdatedBounds();
 
@@ -961,7 +961,7 @@ namespace Decider.Csp.Integer
 				right.GetUpdatedBounds();
 
 			var propagated = false;
-			var intermediateResult = propagator((ExpressionInteger) left, (ExpressionInteger) right, enforceBounds);
+			var intermediateResult = propagator((ExpressionInteger<T>) left, (ExpressionInteger<T>) right, enforceBounds);
 
 			while (intermediateResult == ConstraintOperationResult.Propagated)
 			{
@@ -979,7 +979,7 @@ namespace Decider.Csp.Integer
 					continue;
 
 				propagated = true;
-				intermediateResult = propagator((ExpressionInteger) left, (ExpressionInteger) right, enforceBounds);
+				intermediateResult = propagator((ExpressionInteger<T>) left, (ExpressionInteger<T>) right, enforceBounds);
 			}
 
 			if (intermediateResult == ConstraintOperationResult.Violated)
@@ -988,23 +988,23 @@ namespace Decider.Csp.Integer
 				result = propagated ? ConstraintOperationResult.Propagated : ConstraintOperationResult.Undecided;
 		}
 
-		public ExpressionInteger(Expression<int> left, Expression<int> right)
+		public ExpressionInteger(Expression<T> left, Expression<T> right)
 		{
 			this.left = left;
 			this.right = right;
 		}
 
-		public ExpressionInteger(int integer)
+		public ExpressionInteger(T integer)
 		{
 			this.integer = integer;
-			Bounds = new Bounds<int>(integer, integer);
+			Bounds = new Bounds<T>(integer, integer);
 			remove = _ => DomainOperationResult.ElementNotInDomain;
 		}
 
-		internal ExpressionInteger(VariableInteger variable,
-			Func<ExpressionInteger, ExpressionInteger, int> evaluate,
-			Func<ExpressionInteger, ExpressionInteger, Bounds<int>> evaluateBounds,
-			Func<ExpressionInteger, ExpressionInteger, Bounds<int>, ConstraintOperationResult> propagator)
+		internal ExpressionInteger(VariableInteger<T> variable,
+			Func<ExpressionInteger<T>, ExpressionInteger<T>, T> evaluate,
+			Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>> evaluateBounds,
+			Func<ExpressionInteger<T>, ExpressionInteger<T>, Bounds<T>, ConstraintOperationResult> propagator)
 		{
 			this.left = variable;
 			this.evaluate = evaluate;
@@ -1012,9 +1012,9 @@ namespace Decider.Csp.Integer
 			this.propagator = propagator;
 		}
 
-		public static implicit operator ExpressionInteger(int i)
+		public static implicit operator ExpressionInteger<T>(T i)
 		{
-			return new ExpressionInteger(i);
+			return new ExpressionInteger<T>(i);
 		}
 
 		internal ExpressionInteger() { }

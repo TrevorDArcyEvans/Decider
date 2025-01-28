@@ -7,35 +7,35 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
+using System.Numerics;
 using Decider.Csp.BaseTypes;
 
 namespace Decider.Csp.Integer
 {
-	public class StateInteger : IState<int>
+	public class StateInteger<T> : IState<T>  where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
 		public IList<IConstraint> Constraints { get; private set; }
-		public IList<IVariable<int>> Variables { get; private set; }
+		public IList<IVariable<T>> Variables { get; private set; }
 
 		public int Depth { get; private set; }
 		public int Backtracks { get; private set; }
 		public TimeSpan Runtime { get; private set; }
-		public IDictionary<string, IVariable<int>> OptimalSolution { get; private set; }
-		public IList<IDictionary<string, IVariable<int>>> Solutions { get; private set; }
+		public IDictionary<string, IVariable<T>> OptimalSolution { get; private set; }
+		public IList<IDictionary<string, IVariable<T>>> Solutions { get; private set; }
 
-		private IVariable<int>[] LastSolution { get; set; }
+		private IVariable<T>[] LastSolution { get; set; }
 
-		public StateInteger(IEnumerable<IVariable<int>> variables, IEnumerable<IConstraint> constraints)
+		public StateInteger(IEnumerable<IVariable<T>> variables, IEnumerable<IConstraint> constraints)
 		{
 			SetVariables(variables);
 			SetConstraints(constraints);
 			this.Depth = 0;
 			this.Backtracks = 0;
 			this.Runtime = new TimeSpan(0);
-			this.Solutions = new List<IDictionary<string, IVariable<int>>>();
+			this.Solutions = new List<IDictionary<string, IVariable<T>>>();
 		}
 
-		public void SetVariables(IEnumerable<IVariable<int>> variableList)
+		public void SetVariables(IEnumerable<IVariable<T>> variableList)
 		{
 			this.Variables = variableList.ToList();
 
@@ -51,9 +51,9 @@ namespace Decider.Csp.Integer
 		public StateOperationResult Search()
 		{
 			var unassignedVariables = this.LastSolution == null
-				? new LinkedList<IVariable<int>>(this.Variables)
-				: new LinkedList<IVariable<int>>();
-			var instantiatedVariables = this.LastSolution ?? new IVariable<int>[this.Variables.Count];
+				? new LinkedList<IVariable<T>>(this.Variables)
+				: new LinkedList<IVariable<T>>();
+			var instantiatedVariables = this.LastSolution ?? new IVariable<T>[this.Variables.Count];
 			var stopwatch = Stopwatch.StartNew();
 			var searchResult = StateOperationResult.Unsatisfiable;
 
@@ -78,16 +78,16 @@ namespace Decider.Csp.Integer
 			return searchResult;
 		}
 
-		public StateOperationResult Search(IVariable<int> optimiseVar, int timeOut)
+		public StateOperationResult Search(IVariable<T> optimiseVar, int timeOut)
 		{
 			var unassignedVariables = this.LastSolution == null
-				? new LinkedList<IVariable<int>>(this.Variables)
-				: new LinkedList<IVariable<int>>();
-			var instantiatedVariables = this.LastSolution ?? new IVariable<int>[this.Variables.Count];
+				? new LinkedList<IVariable<T>>(this.Variables)
+				: new LinkedList<IVariable<T>>();
+			var instantiatedVariables = this.LastSolution ?? new IVariable<T>[this.Variables.Count];
 			var stopwatch = Stopwatch.StartNew();
 			var searchResult = StateOperationResult.Unsatisfiable;
 
-			this.Constraints.Add(new ConstraintInteger((VariableInteger) optimiseVar > Int32.MinValue));
+			this.Constraints.Add(new ConstraintInteger<T>((VariableInteger<T>) optimiseVar > T.MinValue));
 
 			while (true)
 			{
@@ -103,7 +103,7 @@ namespace Decider.Csp.Integer
 				if (Search(out searchResult, unassignedVariables, instantiatedVariables, ref stopwatch, timeOut))
 				{
 					this.Constraints.RemoveAt(this.Constraints.Count - 1);
-					this.Constraints.Add(new ConstraintInteger((VariableInteger) optimiseVar > optimiseVar.InstantiatedValue));
+					this.Constraints.Add(new ConstraintInteger<T>((VariableInteger<T>) optimiseVar > optimiseVar.InstantiatedValue));
 					this.OptimalSolution = CloneLastSolution();
 				}
 				else if (searchResult == StateOperationResult.TimedOut)
@@ -121,9 +121,9 @@ namespace Decider.Csp.Integer
 		public StateOperationResult SearchAllSolutions()
 		{
 			var unassignedVariables = this.LastSolution == null
-				? new LinkedList<IVariable<int>>(this.Variables)
-				: new LinkedList<IVariable<int>>();
-			var instantiatedVariables = this.LastSolution ?? new IVariable<int>[this.Variables.Count];
+				? new LinkedList<IVariable<T>>(this.Variables)
+				: new LinkedList<IVariable<T>>();
+			var instantiatedVariables = this.LastSolution ?? new IVariable<T>[this.Variables.Count];
 			var stopwatch = Stopwatch.StartNew();
 
 			var searchResult = StateOperationResult.Unsatisfiable;
@@ -155,20 +155,20 @@ namespace Decider.Csp.Integer
 			return Solutions.Any() ? StateOperationResult.Solved : StateOperationResult.Unsatisfiable;
 		}
 
-		private IDictionary<string, IVariable<int>> CloneLastSolution()
+		private IDictionary<string, IVariable<T>> CloneLastSolution()
 		{
 			return this.LastSolution.Select(v => v.Clone())
-				.Cast<IVariable<int>>()
-				.Select(v => new KeyValuePair<string, IVariable<int>>(v.Name, v))
+				.Cast<IVariable<T>>()
+				.Select(v => new KeyValuePair<string, IVariable<T>>(v.Name, v))
 				.OrderBy(kvp => kvp.Key)
 				.ToDictionary(k => k.Key, v => v.Value);
 		}
 
-		private bool Search(out StateOperationResult searchResult, LinkedList<IVariable<int>> unassignedVariables,
-			IList<IVariable<int>> instantiatedVariables, ref Stopwatch stopwatch, int timeOut = Int32.MaxValue)
+		private bool Search(out StateOperationResult searchResult, LinkedList<IVariable<T>> unassignedVariables,
+			IList<IVariable<T>> instantiatedVariables, ref Stopwatch stopwatch, int timeOut = Int32.MaxValue)
 		{
 			searchResult = StateOperationResult.Unsatisfiable;
-			if (unassignedVariables.Any(x => x.Size() == 0))
+			if (unassignedVariables.Any(x => x.Size() == T.Zero))
 			{
 				this.Depth = -1;
 				return false;
@@ -193,7 +193,7 @@ namespace Decider.Csp.Integer
 				if (instantiateResult != DomainOperationResult.InstantiateSuccessful)
 					return false;
 
-				if (ConstraintsViolated() || unassignedVariables.Any(v => v.Size() == 0))
+				if (ConstraintsViolated() || unassignedVariables.Any(v => v.Size() == T.Zero))
 				{
 					if (!Backtrack(unassignedVariables, instantiatedVariables))
 						return false;
@@ -209,7 +209,7 @@ namespace Decider.Csp.Integer
 			}
 		}
 
-		private bool Backtrack(LinkedList<IVariable<int>> unassignedVariables, IList<IVariable<int>> instantiatedVariables)
+		private bool Backtrack(LinkedList<IVariable<T>> unassignedVariables, IList<IVariable<T>> instantiatedVariables)
 		{
 			DomainOperationResult removeResult;
 			do
@@ -240,7 +240,7 @@ namespace Decider.Csp.Integer
 			return false;
 		}
 
-		private void BackTrackVariable(IVariable<int> variablePrune, out DomainOperationResult result)
+		private void BackTrackVariable(IVariable<T> variablePrune, out DomainOperationResult result)
 		{
 			++this.Backtracks;
 			var value = variablePrune.InstantiatedValue;
@@ -252,7 +252,7 @@ namespace Decider.Csp.Integer
 			variablePrune.Remove(value, this.Depth, out result);
 		}
 
-		private static IVariable<int> GetMostConstrainedVariable(LinkedList<IVariable<int>> list)
+		private static IVariable<T> GetMostConstrainedVariable(LinkedList<IVariable<T>> list)
 		{
 			var temp = list.First;
 			var node = list.First;
@@ -262,7 +262,7 @@ namespace Decider.Csp.Integer
 				if (node.Value.Size() < temp.Value.Size())
 					temp = node;
 
-				if (temp.Value.Size() == 1)
+				if (temp.Value.Size() == T.One)
 					break;
 
 				node = node.Next;

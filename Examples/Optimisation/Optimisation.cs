@@ -16,31 +16,31 @@ namespace Decider.Example.Optimisation
 	{
 		public static void Main()
 		{
-			var a = new VariableInteger("a", 0, 9);
-			var b = new VariableInteger("b", 0, 9);
-			var c = new VariableInteger("c", 0, 9);
-			var d = new VariableInteger("d", 0, 9);
-			var e = new VariableInteger("e", 0, 9);
-			var f = new VariableInteger("f", 0, 9);
-			var g = new VariableInteger("g", 0, 9);
-			var h = new VariableInteger("h", 0, 9);
-			var optimise = new VariableInteger("optimise");
+			var a = new VariableInteger<int>("a", 0, 9);
+			var b = new VariableInteger<int>("b", 0, 9);
+			var c = new VariableInteger<int>("c", 0, 9);
+			var d = new VariableInteger<int>("d", 0, 9);
+			var e = new VariableInteger<int>("e", 0, 9);
+			var f = new VariableInteger<int>("f", 0, 9);
+			var g = new VariableInteger<int>("g", 0, 9);
+			var h = new VariableInteger<int>("h", 0, 9);
+			var optimise = new VariableInteger<int>("optimise");
 
-			var array = new ConstrainedArray(new int[] { 60, 52, 52, 62, 35, 73, 47, 20, 87, 27 });
+			var array = new ConstrainedArray<int>(new int[] { 60, 52, 52, 62, 35, 73, 47, 20, 87, 27 });
 
 			var constraints = new List<IConstraint>
 				{
-					new AllDifferentInteger(new [] { a, b, c, d }),
-					new AllDifferentInteger(new [] { e, f, g, h }),
-					new ConstraintInteger(a + b < 10),
-					new ConstraintInteger(c + d > 15),
-					new ConstraintInteger(h > e),
-					new ConstraintInteger(array[a] < 40),
-					new ConstraintInteger(optimise == a + b + c + d + e + f + g + h)
+					new AllDifferentInteger<int>(new [] { a, b, c, d }),
+					new AllDifferentInteger<int>(new [] { e, f, g, h }),
+					new ConstraintInteger<int>(a + b < 10),
+					new ConstraintInteger<int>(c + d > 15),
+					new ConstraintInteger<int>(h > e),
+					new ConstraintInteger<int>(array[a] < 40),
+					new ConstraintInteger<int>(optimise == a + b + c + d + e + f + g + h)
 				};
 
 			var variables = new[] { a, b, c, d, e, f, g, h, optimise };
-			var state = new StateInteger(variables, constraints);
+			var state = new StateInteger<int>(variables, constraints);
 
 			if (state.Search(optimise, 10) == StateOperationResult.Unsatisfiable)
 				throw new ApplicationException("Cannot find a solution to constraint problem.");

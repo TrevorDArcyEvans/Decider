@@ -12,9 +12,9 @@ using Decider.Csp.BaseTypes;
 
 namespace Decider.Csp.Integer
 {
-	public sealed class VariableInteger : ExpressionInteger, IVariable<int>
+	public sealed class VariableInteger<T> : ExpressionInteger<T>, IVariable<T>  where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
-		private struct DomInt<T> where T : INumber<T>, IMinMaxValue<T>
+		private struct DomInt<T> where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 		{
 			internal readonly IDomain<T> Domain;
 			internal readonly int Depth;
@@ -31,20 +31,20 @@ namespace Decider.Csp.Integer
 			}
 		}
 
-		public IVariable<int> Clone()
+		public IVariable<T> Clone()
 		{
-			return new VariableInteger
+			return new VariableInteger<T>
 				{
-					domainStack = new Stack<DomInt<int>>(domainStack.Select(d => d.Clone()).Reverse().Cast<DomInt<int>>()),
+					domainStack = new Stack<DomInt<T>>(domainStack.Select(d => d.Clone()).Reverse().Cast<DomInt<T>>()),
 					State = State,
 					Name = Name
 				};
 		}
 
-		private Stack<DomInt<int>> domainStack;
-		public IState<int> State { get; set; }
+		private Stack<DomInt<T>> domainStack;
+		public IState<T> State { get; set; }
 		public string Name { get; private set; }
-		public IDomain<int> Domain { get { return this.domainStack.Peek().Domain; } }
+		public IDomain<T> Domain { get { return this.domainStack.Peek().Domain; } }
 
 		internal VariableInteger()
 		{
@@ -60,27 +60,27 @@ namespace Decider.Csp.Integer
 			: this()
 		{
 			this.Name = name;
-			this.domainStack = new Stack<DomInt<int>>();
-			this.domainStack.Push(new DomInt<int>(DomainBinaryInteger.CreateDomain(Int16.MinValue, Int16.MaxValue), -1));
+			this.domainStack = new Stack<DomInt<T>>();
+			this.domainStack.Push(new DomInt<T>(DomainBinaryInteger<T>.CreateDomain(T.MinValue, T.MaxValue), -1));
 		}
 
-		public VariableInteger(string name, IList<int> elements)
+		public VariableInteger(string name, IList<T> elements)
 			: this()
 		{
 			this.Name = name;
-			this.domainStack = new Stack<DomInt<int>>();
-			this.domainStack.Push(new DomInt<int>(DomainBinaryInteger.CreateDomain(elements), -1));
+			this.domainStack = new Stack<DomInt<T>>();
+			this.domainStack.Push(new DomInt<T>(DomainBinaryInteger<T>.CreateDomain(elements), -1));
 		}
 
-		public VariableInteger(string name, int lowerBound, int upperBound)
+		public VariableInteger(string name, T lowerBound, T upperBound)
 			: this()
 		{
 			this.Name = name;
-			this.domainStack = new Stack<DomInt<int>>();
-			this.domainStack.Push(new DomInt<int>(DomainBinaryInteger.CreateDomain(lowerBound, upperBound), -1));
+			this.domainStack = new Stack<DomInt<T>>();
+			this.domainStack.Push(new DomInt<T>(DomainBinaryInteger<T>.CreateDomain(lowerBound, upperBound), -1));
 		}
 
-		public int InstantiatedValue
+		public T InstantiatedValue
 		{
 			get
 			{
@@ -95,17 +95,17 @@ namespace Decider.Csp.Integer
 			if (result != DomainOperationResult.InstantiateSuccessful)
 				return;
 
-			this.domainStack.Push(new DomInt<int>(instantiatedDomain, depth));
+			this.domainStack.Push(new DomInt<T>(instantiatedDomain, depth));
 		}
 
-		public void Instantiate(int value, int depth, out DomainOperationResult result)
+		public void Instantiate(T value, int depth, out DomainOperationResult result)
 		{
 			var instantiatedDomain = this.Domain.Clone();
 			instantiatedDomain.Instantiate(value, out result);
 			if (result != DomainOperationResult.InstantiateSuccessful)
 				return;
 
-			this.domainStack.Push(new DomInt<int>(instantiatedDomain, depth));
+			this.domainStack.Push(new DomInt<T>(instantiatedDomain, depth));
 		}
 
 		public void Backtrack(int fromDepth)
@@ -114,11 +114,11 @@ namespace Decider.Csp.Integer
 				this.domainStack.Pop();
 		}
 
-		public void Remove(int value, int depth, out DomainOperationResult result)
+		public void Remove(T value, int depth, out DomainOperationResult result)
 		{
 			if (this.domainStack.Peek().Depth != depth)
 			{
-				this.domainStack.Push(new DomInt<int>(this.Domain.Clone(), depth));
+				this.domainStack.Push(new DomInt<T>(this.Domain.Clone(), depth));
 
 				this.Domain.Remove(value, out result);
 
@@ -129,7 +129,7 @@ namespace Decider.Csp.Integer
 				this.Domain.Remove(value, out result);
 		}
 
-		public void Remove(int value, out DomainOperationResult result)
+		public void Remove(T value, out DomainOperationResult result)
 		{
 			if (Instantiated() || value > this.Domain.UpperBound || value < this.Domain.LowerBound)
 			{
@@ -145,22 +145,22 @@ namespace Decider.Csp.Integer
 			return this.Domain.Instantiated();
 		}
 
-		public int Size()
+		public T Size()
 		{
 			return this.Domain.Size();
 		}
 
-		public void SetState(IState<int> state)
+		public void SetState(IState<T> state)
 		{
 			this.State = state;
 		}
 
-		public int CompareTo(IVariable<int> otherVariable)
+		public int CompareTo(IVariable<T> otherVariable)
 		{
-			return Size() - otherVariable.Size();
+			return int.CreateChecked(Size() - otherVariable.Size());
 		}
 
-		public override int Value
+		public override T Value
 		{
 			get { return this.InstantiatedValue; }
 		}
@@ -170,13 +170,13 @@ namespace Decider.Csp.Integer
 			get { return Instantiated(); }
 		}
 
-		public override Bounds<int> GetUpdatedBounds()
+		public override Bounds<T> GetUpdatedBounds()
 		{
-			this.Bounds = new Bounds<int>(this.Domain.LowerBound, this.Domain.UpperBound);
+			this.Bounds = new Bounds<T>(this.Domain.LowerBound, this.Domain.UpperBound);
 			return this.Bounds;
 		}
 
-		public override void Propagate(Bounds<int> enforceBounds, out ConstraintOperationResult result)
+		public override void Propagate(Bounds<T> enforceBounds, out ConstraintOperationResult result)
 		{
 			result = ConstraintOperationResult.Undecided;
 
@@ -185,7 +185,7 @@ namespace Decider.Csp.Integer
 
 			var domainIntStack = this.domainStack.Peek();
 			var isDomainNew = false;
-			IDomain<int> propagatedDomain;
+			IDomain<T> propagatedDomain;
 
 			if (domainIntStack.Depth == this.State.Depth)
 			{
@@ -195,7 +195,7 @@ namespace Decider.Csp.Integer
 			{
 				isDomainNew = true;
 				propagatedDomain = domainIntStack.Domain.Clone();
-				this.domainStack.Push(new DomInt<int>(propagatedDomain, this.State.Depth));
+				this.domainStack.Push(new DomInt<T>(propagatedDomain, this.State.Depth));
 			}
 
 			var domainResult = DomainOperationResult.RemoveSuccessful;
@@ -221,7 +221,7 @@ namespace Decider.Csp.Integer
 		public override string ToString()
 		{
 			if (this.IsBound)
-				return this.InstantiatedValue.ToString(CultureInfo.CurrentCulture);
+				return this.InstantiatedValue.ToString();
 
 			return this.Domain.ToString();
 		}

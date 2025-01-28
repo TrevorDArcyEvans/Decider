@@ -22,23 +22,23 @@ namespace Decider.Example.TeacherTimetable
 
 			var hours = Enumerable.Range(0, 8).ToList();
 
-			var Monday = new List<VariableInteger>();
-			var Tuesday = new List<VariableInteger>();
-			var Wednesday = new List<VariableInteger>();
-			var Thursday = new List<VariableInteger>();
-			var Friday = new List<VariableInteger>();
-			var Saturday = new List<VariableInteger>();
+			var Monday = new List<VariableInteger<int>>();
+			var Tuesday = new List<VariableInteger<int>>();
+			var Wednesday = new List<VariableInteger<int>>();
+			var Thursday = new List<VariableInteger<int>>();
+			var Friday = new List<VariableInteger<int>>();
+			var Saturday = new List<VariableInteger<int>>();
 
 			foreach (var period in hours)
 			{
-				Monday.Add(new VariableInteger(string.Format("Monday {0}", period), 1, numberOfTeachers));
-				Tuesday.Add(new VariableInteger(string.Format("Tuesday {0}", period), 1, numberOfTeachers));
-				Wednesday.Add(new VariableInteger(string.Format("Wednesday {0}", period), 1, numberOfTeachers));
-				Thursday.Add(new VariableInteger(string.Format("Thursday {0}", period), 1, numberOfTeachers));
-				Friday.Add(new VariableInteger(string.Format("Friday {0}", period), 1, numberOfTeachers));
+				Monday.Add(new VariableInteger<int>(string.Format("Monday {0}", period), 1, numberOfTeachers));
+				Tuesday.Add(new VariableInteger<int>(string.Format("Tuesday {0}", period), 1, numberOfTeachers));
+				Wednesday.Add(new VariableInteger<int>(string.Format("Wednesday {0}", period), 1, numberOfTeachers));
+				Thursday.Add(new VariableInteger<int>(string.Format("Thursday {0}", period), 1, numberOfTeachers));
+				Friday.Add(new VariableInteger<int>(string.Format("Friday {0}", period), 1, numberOfTeachers));
 
 				if (period < 5)
-					Saturday.Add(new VariableInteger(string.Format("Saturday {0}", period), 1, numberOfTeachers));
+					Saturday.Add(new VariableInteger<int>(string.Format("Saturday {0}", period), 1, numberOfTeachers));
 			}
 
 			var Weekdays = new[] { Monday, Tuesday, Wednesday, Thursday, Friday }.ToList();
@@ -56,7 +56,7 @@ namespace Decider.Example.TeacherTimetable
 			{
 				foreach (var day in Weekdays)
 				{
-					constraints.Add(new ConstraintInteger(day.
+					constraints.Add(new ConstraintInteger<int>(day.
 						Select(x => x == teacher).
 						Aggregate((x, y) => x + y) <= 5));
 				}
@@ -69,7 +69,7 @@ namespace Decider.Example.TeacherTimetable
 				{
 					var threeHourWindow = day.Skip(window).Take(3).ToList();
 
-					constraints.Add(new ConstraintInteger(
+					constraints.Add(new ConstraintInteger<int>(
 						threeHourWindow[0] != threeHourWindow[1] |
 						threeHourWindow[0] != threeHourWindow[2] |
 						threeHourWindow[1] != threeHourWindow[2])
@@ -80,7 +80,7 @@ namespace Decider.Example.TeacherTimetable
 			// No teacher teaches more than 27 hours per week
 			foreach (var teacher in Enumerable.Range(1, numberOfTeachers))
 			{
-				constraints.Add(new ConstraintInteger(Week.
+				constraints.Add(new ConstraintInteger<int>(Week.
 					Select(x => x == teacher).
 					Aggregate((x, y) => x + y) <= 27));
 			}
@@ -89,7 +89,7 @@ namespace Decider.Example.TeacherTimetable
 
 			#region Search
 
-			var state = new StateInteger(Week, constraints);
+			var state = new StateInteger<int>(Week, constraints);
 			state.Search();
 
 			foreach (var period in Week)

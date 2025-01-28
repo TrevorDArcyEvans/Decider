@@ -6,73 +6,76 @@
 using Decider.Csp.Integer;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace Decider.Csp.BaseTypes
 {
-	public class ConstrainedArray : List<int>
+	public class ConstrainedArray<T> : List<T>  where T : INumber<T>, IMinMaxValue<T>, IBinaryNumber<T>
 	{
-		private VariableInteger Index { get; set; }
+		private VariableInteger<T> Index { get; set; }
 
-		public MetaExpressionInteger this[VariableInteger index]
+		public MetaExpressionInteger<T> this[VariableInteger<T> index]
 		{
 			get
 			{
 				Index = index;
 
-				return new MetaExpressionInteger(GetVariableInteger(), this.Evaluate, this.EvaluateBounds, this.Propagator, new[] { Index });
+				return new MetaExpressionInteger<T>(GetVariableInteger(), this.Evaluate, this.EvaluateBounds, this.Propagator, new[] { Index });
 			}
 		}
 
-		public ConstrainedArray(IEnumerable<int> elements)
+		public ConstrainedArray(IEnumerable<T> elements)
 		{
 			this.AddRange(elements);
 		}
 
-		private VariableInteger GetVariableInteger()
+		private VariableInteger<T> GetVariableInteger()
 		{
-			return new VariableInteger(Index.Name + this.ToString(), Elements());
+			return new VariableInteger<T>(Index.Name + this.ToString(), Elements());
 		}
 
-		private List<int> Elements()
+		private List<T> Elements()
 		{
-			return Enumerable.Range(Index.Domain.LowerBound, Index.Domain.UpperBound - Index.Domain.LowerBound + 1).
-				Where(i => Index.Domain.Contains(i)).
-				Select(i => this[i]).
-				ToList();
+			return Enumerable.Range(int.CreateChecked(Index.Domain.LowerBound), int.CreateChecked(Index.Domain.UpperBound - Index.Domain.LowerBound + T.One))
+				.Select(T.CreateChecked)
+				.Where(i => Index.Domain.Contains(i))
+				.Select(i => this[int.CreateChecked(i)])
+				.ToList();
 		}
 
-		private SortedList<int, IList<int>> SortedElements()
+		private SortedList<T, IList<T>> SortedElements()
 		{
-			var kvps = Enumerable.Range(Index.Domain.LowerBound, Index.Domain.UpperBound - Index.Domain.LowerBound + 1).
+			var kvps = Enumerable.Range(int.CreateChecked(Index.Domain.LowerBound),int.CreateChecked(Index.Domain.UpperBound - Index.Domain.LowerBound + T.One)).
+				Select(T.CreateChecked).
 				Where(i => Index.Domain.Contains(i)).
-				Select(i => new { Index = this[i], Value = i });
+				Select(i => new { Index = this[int.CreateChecked(i)], Value = i });
 
-			var sortedList = new SortedList<int, IList<int>>();
+			var sortedList = new SortedList<T, IList<T>>();
 
 			foreach (var kvp in kvps)
 			{
 				if (sortedList.ContainsKey(kvp.Index))
 					sortedList[kvp.Index].Add(kvp.Value);
 				else
-					sortedList[kvp.Index] = new List<int>(new[] { kvp.Value });
+					sortedList[kvp.Index] = new List<T>(new[] { kvp.Value });
 			}
 
 			return sortedList;
 		}
 
-		private int Evaluate(ExpressionInteger left, ExpressionInteger right)
+		private T Evaluate(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
-			return this[Index.Value];
+			return this[int.CreateChecked(Index.Value)];
 		}
 
-		private Bounds<int> EvaluateBounds(ExpressionInteger left, ExpressionInteger right)
+		private Bounds<T> EvaluateBounds(ExpressionInteger<T> left, ExpressionInteger<T> right)
 		{
 			var elements = Elements();
 
-			return new Bounds<int>(elements.DefaultIfEmpty().Min(), elements.DefaultIfEmpty().Max());
+			return new Bounds<T>(elements.DefaultIfEmpty().Min(), elements.DefaultIfEmpty().Max());
 		}
 
-        private ConstraintOperationResult Propagator(ExpressionInteger left, ExpressionInteger right, Bounds<int> enforce)
+        private ConstraintOperationResult Propagator(ExpressionInteger<T> left, ExpressionInteger<T> right, Bounds<T> enforce)
 		{
 			var result = ConstraintOperationResult.Undecided;
 

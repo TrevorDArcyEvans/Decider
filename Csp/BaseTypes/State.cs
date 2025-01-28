@@ -29,7 +29,7 @@ namespace Decider.Csp.BaseTypes
 		void SetConstraints(IEnumerable<IConstraint> constraintList);
 
 		StateOperationResult Search();
-		StateOperationResult Search(IVariable<int> optimiseVariable, int timeOut = Int32.MaxValue);
+		StateOperationResult Search(IVariable<T> optimiseVariable, int timeOut = Int32.MaxValue);
 		StateOperationResult SearchAllSolutions();
 	}
 }

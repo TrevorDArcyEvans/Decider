@@ -16,7 +16,7 @@ namespace Decider.Example.NQueens
 	public class NQueens
 	{
 		private int NumberOfQueens { get; set; }
-		private IList<VariableInteger> Variables { get; set; }
+		private IList<VariableInteger<int>> Variables { get; set; }
 		private IList<IConstraint> Constraints { get; set; }
 		public IState<int> State { get; private set; }
 		public IList<IDictionary<string, IVariable<int>>> Solutions { get; private set; }
@@ -26,24 +26,24 @@ namespace Decider.Example.NQueens
 			NumberOfQueens = numberOfQueens;
 
 			// Model
-			Variables = new VariableInteger[numberOfQueens];
+			Variables = new VariableInteger<int>[numberOfQueens];
 			for (var i = 0; i < Variables.Count; ++i)
-				Variables[i] = new VariableInteger(i.ToString(CultureInfo.CurrentCulture), 0, numberOfQueens - 1);
+				Variables[i] = new VariableInteger<int>(i.ToString(CultureInfo.CurrentCulture), 0, numberOfQueens - 1);
 
 			//	Constraints
-			Constraints = new List<IConstraint> { new AllDifferentInteger(Variables) };
+			Constraints = new List<IConstraint> { new AllDifferentInteger<int>(Variables) };
 			for (var i=0; i < Variables.Count - 1; ++i)
 				for (var j = i + 1; j < Variables.Count; ++j)
 				{
-					Constraints.Add(new ConstraintInteger(Variables[i] - Variables[j] != j - i));
-					Constraints.Add(new ConstraintInteger(Variables[i] - Variables[j] != i - j));
+					Constraints.Add(new ConstraintInteger<int>(Variables[i] - Variables[j] != j - i));
+					Constraints.Add(new ConstraintInteger<int>(Variables[i] - Variables[j] != i - j));
 				}
 		}
 
 		public void SearchAllSolutions()
 		{
 			//	Search
-			State = new StateInteger(Variables, Constraints);
+			State = new StateInteger<int>(Variables, Constraints);
 			if (State.SearchAllSolutions() == StateOperationResult.Solved)
 				Solutions = State.Solutions;
 			else

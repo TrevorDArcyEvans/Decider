@@ -26,12 +26,12 @@ namespace Decider.Example.PhaseLockedLoop
 			}
 
 			//	Model
-			var f1 = new VariableInteger("f1", 1, 256);
-			var f2 = new VariableInteger("f2", 1, 256);
-			var r1 = new VariableInteger("r1", 1, 64);
-			var r2 = new VariableInteger("r2", 1, 64);
-			var q1 = new VariableInteger("q1", Enumerable.Range(1, 8).Select(i => (int) Math.Pow(2, i)).ToList());
-			var q2 = new VariableInteger("q2", Enumerable.Range(1, 8).Select(i => (int) Math.Pow(2, i)).ToList());
+			var f1 = new VariableInteger<int>("f1", 1, 256);
+			var f2 = new VariableInteger<int>("f2", 1, 256);
+			var r1 = new VariableInteger<int>("r1", 1, 64);
+			var r2 = new VariableInteger<int>("r2", 1, 64);
+			var q1 = new VariableInteger<int>("q1", Enumerable.Range(1, 8).Select(i => (int) Math.Pow(2, i)).ToList());
+			var q2 = new VariableInteger<int>("q2", Enumerable.Range(1, 8).Select(i => (int) Math.Pow(2, i)).ToList());
 
 
 			//	Constraints
@@ -44,22 +44,22 @@ namespace Decider.Example.PhaseLockedLoop
 
 			var constraints = new List<IConstraint>
 				{
-					new ConstraintInteger(pllOut * r1 * r2 * q1 * q2 == refF * f1 * f2),
-					new ConstraintInteger(refF >= divrMin * r1),
-					new ConstraintInteger(refF <= divrMax * r1),
-					new ConstraintInteger(refF * f1 >= vcoMin * r1),
-					new ConstraintInteger(refF * f1 <= vcoMax * r1),
-					new ConstraintInteger(refF * f1 >= refMin * r1 * q1),
-					new ConstraintInteger(refF * f1 <= refMax * r1 * q1),
-					new ConstraintInteger(refF * f1 >= divrMin * r2 * r1 * q1),
-					new ConstraintInteger(refF * f1 <= divrMax * r2 * r1 * q1),
-					new ConstraintInteger(refF * f1 * f2 >= vcoMin * r2 * r1 * q1),
-					new ConstraintInteger(refF * f1 * f2 <= vcoMax * r2 * r1 * q1),
+					new ConstraintInteger<int>(pllOut * r1 * r2 * q1 * q2 == refF * f1 * f2),
+					new ConstraintInteger<int>(refF >= divrMin * r1),
+					new ConstraintInteger<int>(refF <= divrMax * r1),
+					new ConstraintInteger<int>(refF * f1 >= vcoMin * r1),
+					new ConstraintInteger<int>(refF * f1 <= vcoMax * r1),
+					new ConstraintInteger<int>(refF * f1 >= refMin * r1 * q1),
+					new ConstraintInteger<int>(refF * f1 <= refMax * r1 * q1),
+					new ConstraintInteger<int>(refF * f1 >= divrMin * r2 * r1 * q1),
+					new ConstraintInteger<int>(refF * f1 <= divrMax * r2 * r1 * q1),
+					new ConstraintInteger<int>(refF * f1 * f2 >= vcoMin * r2 * r1 * q1),
+					new ConstraintInteger<int>(refF * f1 * f2 <= vcoMax * r2 * r1 * q1),
 				};
 
 
 			//	Search
-			var state = new StateInteger(new[] { f1, f2, r1, r2, q1, q2 }, constraints);
+			var state = new StateInteger<int>(new[] { f1, f2, r1, r2, q1, q2 }, constraints);
 
 			if (state.Search() == StateOperationResult.Solved)
 			{
