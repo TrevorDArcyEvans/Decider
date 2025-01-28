@@ -8,10 +8,11 @@
   of the MetaExpression need to be re-evaluated.
 */
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Decider.Csp.BaseTypes
 {
-	public interface IMetaExpression<T>
+	public interface IMetaExpression<T> where T : INumber<T>, IMinMaxValue<T>
 	{
 		IList<IVariable<T>> Support { get; }
 	}

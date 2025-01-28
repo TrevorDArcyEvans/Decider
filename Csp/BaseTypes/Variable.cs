@@ -4,10 +4,11 @@
   This file is part of Decider.
 */
 using System;
+using System.Numerics;
 
 namespace Decider.Csp.BaseTypes
 {
-	public interface IVariable<T> : IComparable<IVariable<T>>
+	public interface IVariable<T> : IComparable<IVariable<T>> where T : INumber<T>, IMinMaxValue<T>
 	{
 		void Instantiate(int depth, out DomainOperationResult result);
 		void Instantiate(T value, int depth, out DomainOperationResult result);

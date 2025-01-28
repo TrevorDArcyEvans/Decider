@@ -5,6 +5,7 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Decider.Csp.BaseTypes
 {
@@ -15,7 +16,7 @@ namespace Decider.Csp.BaseTypes
 		TimedOut
 	}
 
-	public interface IState<T>
+	public interface IState<T> where T : INumber<T>, IMinMaxValue<T>
 	{
 		int Depth { get; }
 		TimeSpan Runtime { get; }

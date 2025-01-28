@@ -3,9 +3,12 @@
   
   This file is part of Decider.
 */
+
+using System.Numerics;
+
 namespace Decider.Csp.BaseTypes
 {
-	public struct Bounds<T>
+	public struct Bounds<T> where T : INumber<T>, IMinMaxValue<T>
 	{
 		public T LowerBound;
 		public T UpperBound;
@@ -17,7 +20,7 @@ namespace Decider.Csp.BaseTypes
 		}
 	}
 
-	public abstract class Expression<T>
+	public abstract class Expression<T> where T : INumber<T>, IMinMaxValue<T>
 	{
 		public abstract T Value { get; }
 		public abstract bool IsBound { get; }

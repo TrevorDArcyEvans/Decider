@@ -4,6 +4,7 @@
   This file is part of Decider.
 */
 using System.Collections;
+using System.Numerics;
 
 namespace Decider.Csp.BaseTypes
 {
@@ -15,7 +16,7 @@ namespace Decider.Csp.BaseTypes
 		InstantiateSuccessful
 	}
 
-	public interface IDomain<T> : IEnumerable
+	public interface IDomain<T> : IEnumerable where T : INumber<T>, IMinMaxValue<T>
 	{
 		T InstantiatedValue { get; }
 
