@@ -1,3 +1,4 @@
+using System;
 using Decider.Csp.BaseTypes;
 
 namespace Decider.Tests.Csp;
@@ -13,6 +14,22 @@ public class DomainBinaryIntegerTests
   public DomainBinaryIntegerTests()
   {
     sut = new DomainBinaryInteger(-100, 5000);
+  }
+
+  [Fact]
+  public void Constructor_Invalid_Throws()
+  {
+    Assert.Throws<ArgumentException>(() => new DomainBinaryInteger(-1));
+  }
+
+  [Fact]
+  public void Constructor_Bits_Per_Datatype_Returns_Size()
+  {
+    var sut2 = new DomainBinaryInteger(31);
+
+    var size = sut2.Size();
+
+    Assert.Equal(size, 32);
   }
 
   [Fact]
@@ -43,6 +60,16 @@ public class DomainBinaryIntegerTests
   public void InstantiatedValue_Throws()
   {
     Assert.Throws<DeciderException>(() => _ = sut.InstantiatedValue);
+  }
+
+  [Fact]
+  public void InstantiateLowest_Fails()
+  {
+    var sut2 = new DomainBinaryInteger(2, 1);
+
+    sut2.InstantiateLowest(out var retVal);
+
+    Assert.Equal(retVal, DomainOperationResult.ElementNotInDomain);
   }
 
   [Fact]
@@ -179,5 +206,17 @@ public class DomainBinaryIntegerTests
     sut.Instantiate(out var _);
 
     Assert.Equal(sut.UpperBound, -100);
+  }
+
+  [Fact]
+  public void CreateDomain_Succeeds()
+  {
+    _ = DomainBinaryInteger.CreateDomain(new[] { -10, -9, -7, 0, 1, 21, 5003 });
+  }
+
+  [Fact]
+  public void CreateDomain_Throws()
+  {
+    Assert.Throws<ArgumentException>(() => DomainBinaryInteger.CreateDomain(2,1));
   }
 }
