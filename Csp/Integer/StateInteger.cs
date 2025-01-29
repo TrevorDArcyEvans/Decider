@@ -48,7 +48,7 @@ namespace Decider.Csp.Integer
 			this.Constraints = constraints?.ToList() ?? new List<IConstraint>();
 		}
 
-		public StateOperationResult Search()
+		public StateOperationResult Search(int timeOutSec)
 		{
 			var unassignedVariables = this.LastSolution == null
 				? new LinkedList<IVariable<int>>(this.Variables)
@@ -70,7 +70,7 @@ namespace Decider.Csp.Integer
 				return searchResult;
 			}
 
-			if (Search(out searchResult, unassignedVariables, instantiatedVariables, ref stopwatch))
+			if (Search(out searchResult, unassignedVariables, instantiatedVariables, ref stopwatch, timeOutSec))
 				this.Solutions.Add(CloneLastSolution());
 
 			this.Runtime += stopwatch.Elapsed;
@@ -78,7 +78,7 @@ namespace Decider.Csp.Integer
 			return searchResult;
 		}
 
-		public StateOperationResult Search(IVariable<int> optimiseVar, int timeOut)
+		public StateOperationResult Search(IVariable<int> optimiseVar, int timeOutSec)
 		{
 			var unassignedVariables = this.LastSolution == null
 				? new LinkedList<IVariable<int>>(this.Variables)
@@ -100,7 +100,7 @@ namespace Decider.Csp.Integer
 				else if (ConstraintsViolated())
 					break;
 
-				if (Search(out searchResult, unassignedVariables, instantiatedVariables, ref stopwatch, timeOut))
+				if (Search(out searchResult, unassignedVariables, instantiatedVariables, ref stopwatch, timeOutSec))
 				{
 					this.Constraints.RemoveAt(this.Constraints.Count - 1);
 					this.Constraints.Add(new ConstraintInteger((VariableInteger) optimiseVar > optimiseVar.InstantiatedValue));
@@ -118,7 +118,7 @@ namespace Decider.Csp.Integer
 			return searchResult;
 		}
 
-		public StateOperationResult SearchAllSolutions()
+		public StateOperationResult SearchAllSolutions(int timeOutSec)
 		{
 			var unassignedVariables = this.LastSolution == null
 				? new LinkedList<IVariable<int>>(this.Variables)
@@ -146,7 +146,7 @@ namespace Decider.Csp.Integer
 					break;
 				}
 
-				if (Search(out searchResult, unassignedVariables, instantiatedVariables, ref stopwatch))
+				if (Search(out searchResult, unassignedVariables, instantiatedVariables, ref stopwatch, timeOutSec))
 					this.Solutions.Add(CloneLastSolution());
 			}
 

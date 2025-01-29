@@ -27,8 +27,8 @@ namespace Decider.Csp.BaseTypes
 		void SetVariables(IEnumerable<IVariable<T>> variableList);
 		void SetConstraints(IEnumerable<IConstraint> constraintList);
 
-		StateOperationResult Search();
-		StateOperationResult Search(IVariable<int> optimiseVariable, int timeOut = Int32.MaxValue);
-		StateOperationResult SearchAllSolutions();
+		StateOperationResult Search(int timeOutSec = int.MaxValue);
+		StateOperationResult Search(IVariable<int> optimiseVariable, int timeOutSec = int.MaxValue);
+		StateOperationResult SearchAllSolutions(int timeOutSec = int.MaxValue);
 	}
 }

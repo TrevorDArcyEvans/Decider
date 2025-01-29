@@ -25,7 +25,7 @@ let solve rolls rollers =
     ]
 
     let state = StateInteger(variables, constraints)
-    match state.Search() with
+    match state.Search(100) with
     | StateOperationResult.Solved ->
         [ kickboards.Value, cityrollers.Value ]
     | _ ->

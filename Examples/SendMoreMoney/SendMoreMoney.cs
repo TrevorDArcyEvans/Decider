@@ -42,7 +42,7 @@ namespace Decider.Example.SendMoreMoney
 			var variables = new [] { c0, c1, c2, c3, s, e, n, d, m, o, r, y };
 			var state = new StateInteger(variables, constraints);
 
-			if (state.Search() == StateOperationResult.Unsatisfiable)
+			if (state.Search(int.MaxValue) == StateOperationResult.Unsatisfiable)
 				throw new ApplicationException("Cannot find solution to the SEND + MORE = MONEY problem.");
 
 			Console.WriteLine($"Runtime:\t{state.Runtime}\nBacktracks:\t{state.Backtracks}\n");

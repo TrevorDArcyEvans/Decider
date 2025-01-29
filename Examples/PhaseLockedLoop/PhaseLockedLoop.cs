@@ -61,7 +61,7 @@ namespace Decider.Example.PhaseLockedLoop
 			//	Search
 			var state = new StateInteger(new[] { f1, f2, r1, r2, q1, q2 }, constraints);
 
-			if (state.Search() == StateOperationResult.Solved)
+			if (state.Search(int.MaxValue) == StateOperationResult.Solved)
 			{
 				var tmp = (double) (refF * f1.Value) / (r1.Value * q1.Value);
 
