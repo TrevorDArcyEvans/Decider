@@ -56,9 +56,10 @@ namespace Decider.Example.TeacherTimetable
 			{
 				foreach (var day in Weekdays)
 				{
-					constraints.Add(new ConstraintInteger(day.
+					constraints.Add(new ConstraintInteger(
+						new ExpressionInteger(day.
 						Select(x => x == teacher).
-						Aggregate((x, y) => x + y) <= 5));
+						Count()) <= 5));
 				}
 			}
 
@@ -80,9 +81,10 @@ namespace Decider.Example.TeacherTimetable
 			// No teacher teaches more than 27 hours per week
 			foreach (var teacher in Enumerable.Range(1, numberOfTeachers))
 			{
-				constraints.Add(new ConstraintInteger(Week.
+				constraints.Add(new ConstraintInteger(
+					new ExpressionInteger(Week.
 					Select(x => x == teacher).
-					Aggregate((x, y) => x + y) <= 27));
+					Count()) <= 27));
 			}
 
 			#endregion
@@ -90,7 +92,13 @@ namespace Decider.Example.TeacherTimetable
 			#region Search
 
 			var state = new StateInteger(Week, constraints);
-			state.Search(int.MaxValue);
+			var result = state.Search(10);
+
+			if (result != StateOperationResult.Solved)
+			{
+				Console.WriteLine($"Result:\t{result}");
+				return;
+			}
 
 			foreach (var period in Week)
 			{
