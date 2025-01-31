@@ -16,6 +16,25 @@ namespace Decider.Example.TeacherTimetable
 	{
 		public static void Main()
 		{
+			var state = GetTimetableTeachersState(out var Week);
+			var result = state.Search(10);
+
+			if (result != StateOperationResult.Solved)
+			{
+				Console.WriteLine($"Result:\t{result}");
+				return;
+			}
+
+			foreach (var period in Week)
+			{
+				Console.WriteLine("{0}: {1}", period.Name, period.Value);
+			}
+
+			Console.WriteLine("Runtime:\t{0}\nBacktracks:\t{1}\n", state.Runtime, state.Backtracks);
+		}
+
+		public static StateInteger GetTimetableTeachersState(out List<VariableInteger> Week)
+		{
 			#region Model
 
 			var numberOfTeachers = 3;
@@ -43,7 +62,7 @@ namespace Decider.Example.TeacherTimetable
 
 			var Weekdays = new[] { Monday, Tuesday, Wednesday, Thursday, Friday }.ToList();
 			var Days = new[] { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday }.ToList();
-			var Week = Days.SelectMany(x => x).ToList();
+			Week = Days.SelectMany(x => x).ToList();
 
 			#endregion
 
@@ -58,8 +77,8 @@ namespace Decider.Example.TeacherTimetable
 				{
 					constraints.Add(new ConstraintInteger(
 						new ExpressionInteger(day.
-						Select(x => x == teacher).
-						Count()) <= 5));
+							Select(x => x == teacher).
+							Count()) <= 5));
 				}
 			}
 
@@ -83,8 +102,8 @@ namespace Decider.Example.TeacherTimetable
 			{
 				constraints.Add(new ConstraintInteger(
 					new ExpressionInteger(Week.
-					Select(x => x == teacher).
-					Count()) <= 27));
+						Select(x => x == teacher).
+						Count()) <= 27));
 			}
 
 			#endregion
@@ -92,20 +111,7 @@ namespace Decider.Example.TeacherTimetable
 			#region Search
 
 			var state = new StateInteger(Week, constraints);
-			var result = state.Search(10);
-
-			if (result != StateOperationResult.Solved)
-			{
-				Console.WriteLine($"Result:\t{result}");
-				return;
-			}
-
-			foreach (var period in Week)
-			{
-				Console.WriteLine("{0}: {1}", period.Name, period.Value);
-			}
-
-			Console.WriteLine("Runtime:\t{0}\nBacktracks:\t{1}\n", state.Runtime, state.Backtracks);
+			return state;
 
 			#endregion
 		}
